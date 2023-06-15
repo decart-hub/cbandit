@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+require 'json'
+require_relative '../utils/rprint'
+require_relative '../utils/colorize'
+require_relative '../utils/tableprint'
+require_relative '../commands/list'
+require_relative '../commands/decrypt'
+
+OS = :macOS
+RESOURCES_PATH = File.expand_path __dir__ + "/../resources"
+VERBOSE = ARGV.include?('-v') || ARGV.include?('--verbose')
+BROWSERS = JSON.parse(File.read(RESOURCES_PATH + "/browsers.json"), {:symbolize_names => true})[OS]
+
+def main
+    case ARGV[0]
+        when 'list'
+            list = ListCommand.new
+            list.run()
+        when 'decrypt'
+            list = DecryptCommand.new
+            list.run()
+        else
+            help()
+    end
+end
+
+def help
+    puts "chrome-bandit <command>\n\nUseage:\n\n"
+    rprint([
+        ['chrome-bandit list', 'list browser passwords'],
+        ['chrome-bandit decrypt', 'decrypt a given password'],
+        ['chrome-bandit <command> -help' , 'quick help on <command>']
+    ])
+    puts ""
+end
+
+begin
+    main()
+rescue => exception
+    if VERBOSE
+        raise exception
+    else
+        puts "ERROR: ".red + exception.to_s
+    end
+end
